@@ -6,6 +6,7 @@ type test = {
   DB_PASSWORD: string;
   DB_DATABASE: string;
   DB_HOST: string;
+  JWT_SECRET: string;
 };
 
 type development = {
@@ -14,6 +15,7 @@ type development = {
   DB_PASSWORD: string;
   DB_DATABASE: string;
   DB_HOST: string;
+  JWT_SECRET: string;
 };
 
 type variablesType = development | test;
@@ -28,6 +30,7 @@ const envRequestVariables = (): variablesType => {
       DB_USERNAME: process.env.DB_USERNAME_TEST,
       DB_PASSWORD: process.env.DB_PASSWORD_TEST,
       DB_DATABASE: process.env.DB_DATABASE_TEST,
+      JWT_SECRET: process.env.JWT_SECRET_TEST,
     },
     development: {
       DB_PORT: process.env.DB_PORT_DEV,
@@ -35,6 +38,7 @@ const envRequestVariables = (): variablesType => {
       DB_USERNAME: process.env.DB_USERNAME_DEV,
       DB_PASSWORD: process.env.DB_PASSWORD_DEV,
       DB_DATABASE: process.env.DB_DATABASE_DEV,
+      JWT_SECRET: process.env.JWT_SECRET_DEV,
     },
   };
 

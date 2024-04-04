@@ -1,11 +1,13 @@
+import { UserModel, LoginValid } from './../model/user-model';
 import { Resolver, Mutation, Query, Arg } from 'type-graphql';
 
 import { appDataSource } from '../data-source';
-import { UserModel } from '../model/user-model';
-import { User } from '../entity/user';
-import argonUtil from '../utils/argon-util';
 import { CustomError } from '../exceptionsClass/exceptions-not-found-user';
-import { CreateUserInput, UpdatedUserInput } from './inputs-validations/user-inputs-validations';
+import { CreateUserInput, UpdatedUserInput } from './input-validation/user-input-validation';
+import { User } from '../entity/user';
+
+import argonUtil from '../utils/argon-util';
+import jwtUtil from '../utils/jwt-util';
 
 @Resolver()
 export class UserResolver {
@@ -14,6 +16,36 @@ export class UserResolver {
   @Query(() => [UserModel])
   async getUsers() {
     return this.users.find();
+  }
+
+  @Mutation(() => LoginValid)
+  async login(@Arg('email') email: string, @Arg('password') password: string): Promise<LoginValid> {
+    const findUser = await this.users.findOne({ where: { email } });
+
+    if (!findUser) {
+      throw new CustomError(
+        'Usuário ou senha inválidos.',
+        401,
+        'Não foi possível realizar login. Verifique suas credenciais e tente novamente.',
+      );
+    }
+
+    const argonVerify = await argonUtil.verifyHashPassword(findUser.password, password);
+
+    if (!argonVerify) {
+      throw new CustomError(
+        'Usuário ou senha inválidos.',
+        401,
+        'Não foi possível realizar login. Verifique suas credenciais e tente novamente.',
+      );
+    }
+
+    const sessionToken = jwtUtil.signToken({ name: findUser.name, id: findUser.id });
+
+    return {
+      user: findUser,
+      token: sessionToken,
+    };
   }
 
   @Mutation(() => UserModel)

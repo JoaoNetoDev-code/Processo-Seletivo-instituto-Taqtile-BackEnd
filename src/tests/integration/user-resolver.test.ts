@@ -6,15 +6,23 @@ import {
   createUserMutation,
   deleteUserMutation,
   getUserQuery,
+  loginMutation,
   updateUserMutation,
 } from '../resolvers/user-resolver-test';
-import { CreateUserType, DeleteUserType, GetUsersType, UpdatedUserType } from './../types/get-users-type';
+import {
+  CreateUserType,
+  DeleteUserType,
+  GetUsersType,
+  LoginTypeReturn,
+  UpdatedUserType,
+} from './../types/get-users-type';
 
 import { appDataSource } from '../../data-source';
 import { User } from '../../entity/user';
 
 import envRequestVariables from '../../utils/request-variables';
 import { createUser, dateFuture } from '../mock-users/users-mock';
+import argonUtil from '../../utils/argon-util';
 
 const PORT = envRequestVariables().DB_HOST;
 const URL = `http://localhost:${PORT}`;
@@ -127,6 +135,7 @@ describe('Testando user-resolver', async () => {
       query: deleteUserMutation,
       variables: { deleteUserId: newUser.id },
     });
+
     expect(response.status).to.equal(200);
     expect(response.data.data.deleteUser).to.be.equal('Usuário removido com sucesso!');
   });
@@ -134,7 +143,7 @@ describe('Testando user-resolver', async () => {
   it('A MUTATION deleteUser deve retornar o STATUS:200 e a mensagem: "Usuário não encontrado." caso não encontre o usuário do id recebido.', async () => {
     const response = await axios.post(URL, {
       query: deleteUserMutation,
-      variables: { deleteUserId: -1 },
+      variables: { deleteUserId: 0 },
     });
 
     expect(response.status).to.equal(200);
@@ -185,5 +194,39 @@ describe('Testando user-resolver', async () => {
 
     expect(response.data.data.updateUser.birthDate).to.be.not.equal(newUser.birthDate);
     expect(response.data.data.updateUser.name).to.be.not.equal(newUser.name);
+  });
+
+  it('A MUTATION login deve ser capaz de retornar o usuário mas o token da sessão em caso de sucesso:', async () => {
+    const senhaSuperForte = await argonUtil.signHashPassword('asd123');
+    const newUser = await users.save({ ...createUser, password: senhaSuperForte });
+
+    const response: AxiosResponse<{ data: LoginTypeReturn }> = await axios.post(URL, {
+      query: loginMutation,
+      variables: {
+        email: newUser.email,
+        password: 'asd123',
+      },
+    });
+
+    expect(response.status).to.be.equal(200);
+    expect(response.data.data.login).to.have.all.keys('user', 'token');
+    expect(response.data.data.login.user).to.have.all.keys('id', 'email', 'birthDate', 'name');
+  });
+
+  it('A MUTATION login deve ser capaz de retornar o STATUS 401 ea mensagem "Usuário ou senha inválidos." caso o usuario envie uma email ou senha errada.', async () => {
+    const senhaSuperForte = await argonUtil.signHashPassword('asd123');
+
+    const newUser = await users.save({ ...createUser, password: senhaSuperForte });
+
+    const response = await axios.post(URL, {
+      query: loginMutation,
+      variables: {
+        email: 'email super errado.',
+        password: newUser.password,
+      },
+    });
+
+    expect(response.data.errors[0].code).to.be.equal(401);
+    expect(response.data.errors[0].message).to.be.equal('Usuário ou senha inválidos.');
   });
 });

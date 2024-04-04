@@ -15,3 +15,10 @@ export type DeleteUserType = {
 export type UpdatedUserType = {
   updateUser: UserModel;
 };
+
+export type LoginTypeReturn = {
+  login: {
+    user: UserModel;
+    token: string;
+  };
+};

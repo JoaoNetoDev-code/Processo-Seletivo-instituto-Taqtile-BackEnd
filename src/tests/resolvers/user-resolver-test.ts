@@ -32,3 +32,16 @@ mutation($userData: UpdatedUserInput!, $updateUserId: Float!) {
     birthDate
   }
 }`;
+
+export const loginMutation = `
+mutation($password: String!, $email: String!) {
+  login(password: $password, email: $email) {
+    user {
+      id
+      name
+      email
+      birthDate
+    },
+    token
+  }
+}`;

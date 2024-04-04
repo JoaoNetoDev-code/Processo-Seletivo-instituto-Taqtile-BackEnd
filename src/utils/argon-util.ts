@@ -1,10 +1,10 @@
 import * as argon2 from 'argon2';
 
-const verifyHashPassword = (payload: string, token: string) => {
+const verifyHashPassword = (hash: string, password: string) => {
   try {
-    return argon2.verify(token, payload);
+    return argon2.verify(hash, password);
   } catch (err) {
-    console.error(`Erro ao realizar o decoded: ${err}`);
+    throw new Error(`Erro ao realizar o decoded: ${err}`);
   }
 };
 

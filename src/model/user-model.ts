@@ -14,3 +14,12 @@ export class UserModel {
   @Field()
   birthDate: Date;
 }
+
+@ObjectType()
+export class LoginValid {
+  @Field(() => UserModel)
+  user: UserModel;
+
+  @Field()
+  token: string;
+}
