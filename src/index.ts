@@ -5,8 +5,8 @@ import { buildSchema } from 'type-graphql';
 import { UserResolver } from './resolvers/user-resolver';
 import { appDataSource } from './data-source';
 import { Hello } from './resolvers/hello';
-
 import envRequestVariables from './utils/request-variables';
+import formatError from './exceptionsClass/my-format-error';
 
 const port = envRequestVariables().DB_HOST;
 
@@ -19,7 +19,11 @@ const main = async () => {
     resolvers: [Hello, UserResolver],
   });
 
-  const server = new ApolloServer({ schema });
+  const server = new ApolloServer({
+    schema,
+    debug: false,
+    formatError,
+  });
 
   await server
     .listen({ port })

@@ -1,53 +1,11 @@
-import { Resolver, Mutation, Query, Field, Arg, InputType } from 'type-graphql';
-import { IsEmail, IsOptional, Matches, MaxDate, MinLength } from 'class-validator';
+import { Resolver, Mutation, Query, Arg } from 'type-graphql';
 
 import { appDataSource } from '../data-source';
 import { UserModel } from '../model/user-model';
 import { User } from '../entity/user';
 import argonUtil from '../utils/argon-util';
-
-@InputType()
-class CreateUserInput {
-  @Field()
-  name: string;
-
-  @Field()
-  @IsEmail({}, { message: 'Por favor, insira um endereço de e-mail válido.' })
-  email: string;
-
-  @Field()
-  @MinLength(6, { message: 'A senha deve ter no mínimo 6 caracteres.' })
-  @Matches(/^(?=.*[A-Za-z])(?=.*\d).+$/, { message: 'A senha deve ter no mínimo uma letra e um número.' })
-  password: string;
-
-  @Field()
-  @MaxDate(() => new Date(), { message: 'Deve ser uma data presente ou passada.' })
-  birthDate: Date;
-}
-
-@InputType()
-class UpdatedUserInput {
-  @Field({ nullable: true })
-  @IsOptional()
-  @MinLength(2, { message: 'O nome deve ter no mínimo 2 caracteres.' })
-  name?: string;
-
-  @Field({ nullable: true })
-  @IsOptional()
-  @IsEmail({}, { message: 'Por favor, insira um endereço de e-mail válido.' })
-  email?: string;
-
-  @Field({ nullable: true })
-  @IsOptional()
-  @MinLength(6, { message: 'A senha deve ter no mínimo 6 caracteres.' })
-  @Matches(/^(?=.*[A-Za-z])(?=.*\d).+$/, { message: 'A senha deve ter no mínimo uma letra e um número.' })
-  password?: string;
-
-  @Field({ nullable: true })
-  @IsOptional()
-  @MaxDate(() => new Date(), { message: 'Deve ser uma data presente ou passada.' })
-  birthDate?: Date;
-}
+import { CustomError } from '../exceptionsClass/exceptions-not-found-user';
+import { CreateUserInput, UpdatedUserInput } from './inputs-validations/user-inputs-validations';
 
 @Resolver()
 export class UserResolver {
@@ -63,7 +21,7 @@ export class UserResolver {
     const userExists = await this.users.findOne({ where: { email: userData.email } });
 
     if (userExists) {
-      throw new Error('Erro ao cadastrar novo usuário.');
+      throw new CustomError('Erro ao cadastrar novo usuário.', 400, 'Usuário já existe.');
     }
 
     const token = await argonUtil.signHashPassword(userData.password);
@@ -76,7 +34,7 @@ export class UserResolver {
     const userExists = await this.users.findOne({ where: { id } });
 
     if (!userExists) {
-      throw new Error('Usuário não encontrado.');
+      throw new CustomError('Usuário não encontrado.', 400, 'Não foi possivel encontar o usuario solicitado.');
     }
 
     await this.users.remove(userExists);
@@ -90,11 +48,15 @@ export class UserResolver {
     const emailIsDuplicate = await this.users.findOne({ where: { email: userData.email } });
 
     if (!userExists) {
-      throw new Error('Usuário não encontrado.');
+      throw new CustomError('Usuário não encontrado.', 400, 'Não foi possivel encontar o usuario solicitado.');
     }
 
     if (emailIsDuplicate && emailIsDuplicate.id !== userExists.id) {
-      throw new Error('O e-mail fornecido já está em uso por outro usuário.');
+      throw new CustomError(
+        'O e-mail fornecido já está em uso por outro usuário.',
+        400,
+        'Por favor insira um email válido.',
+      );
     }
 
     Object.assign(userExists, userData);
