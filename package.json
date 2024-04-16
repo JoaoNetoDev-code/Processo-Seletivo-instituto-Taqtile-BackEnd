@@ -6,7 +6,7 @@
    "scripts": {
       "build": "rm -rf ./build && mkdir ./build && tsc",
       "dev": "NODE_ENV=dev tsnd --respawn --transpile-only src/index.ts",
-      "test": "NODE_ENV=dev mocha -r ts-node/register src/tests/**/*.test.ts --exit -t 60000 --exit",
+      "test": "NODE_ENV=test mocha -r ts-node/register src/tests/**/*.test.ts --exit -t 60000 --exit",
       "test:coverage": "NODE_ENV=test nyc mocha --config .mocharc.json src/tests/**/*.test.ts --exit -t 60000",
       "db:reset": "docker compose down && docker compose up -d --build",
       "lint": "eslint .",

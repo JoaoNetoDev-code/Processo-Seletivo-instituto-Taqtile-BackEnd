@@ -1,5 +1,5 @@
 import axios, { AxiosResponse } from 'axios';
-import { before, beforeEach, describe, it } from 'mocha';
+import { after, before, describe, it } from 'mocha';
 import { expect } from 'chai';
 
 import {
@@ -23,17 +23,22 @@ import { User } from '../../entity/user';
 
 import { createUser, dateFuture } from '../mock-users/users-mock';
 import argonUtil from '../../utils/argon-util';
+import { main } from '../..';
 
 const URL = `http://localhost:${process.env.DB_HOST}`;
+
+const startServer = async () => {
+  await main();
+};
 
 describe('Testando user-resolver', async () => {
   const users = appDataSource.getRepository(User);
 
   before('INICIANDO TESTES: ', async () => {
-    await appDataSource.initialize();
+    await startServer();
   });
 
-  beforeEach(async () => {
+  after('DEPOIS DOS TESTES', () => {
     users.clear();
   });
 
@@ -45,10 +50,11 @@ describe('Testando user-resolver', async () => {
     const allUsers = (await users.find()).length;
 
     expect(response.status).to.equal(200);
+
     expect(response.data.data.getUsers).to.have.length(allUsers);
 
     response.data.data.getUsers.forEach((user) => {
-      expect(user).to.have.all.keys('id', 'name', 'email', 'birthdate');
+      expect(user).to.have.all.keys('id', 'name', 'email', 'birthDate');
       expect(user.id).to.be.a('string').that.is.not.empty;
       expect(user.name).to.be.a('string').that.is.not.empty;
       expect(user.email).to.be.a('string').that.is.not.empty;

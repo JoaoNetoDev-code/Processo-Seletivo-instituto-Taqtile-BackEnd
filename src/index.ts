@@ -6,8 +6,11 @@ import { UserResolver } from './resolvers/user-resolver';
 import { appDataSource } from './data-source';
 import { Hello } from './resolvers/hello';
 import formatError from './exceptionsClass/my-format-error';
+import envRequest from './utils/env-request';
 
-const main = async () => {
+envRequest();
+
+export const main = async () => {
   await appDataSource.initialize();
 
   const schema = await buildSchema({
@@ -18,6 +21,9 @@ const main = async () => {
     schema,
     debug: false,
     formatError,
+    cors: {
+      origin: '*',
+    },
   });
 
   await server
