@@ -5,12 +5,7 @@ import { buildSchema } from 'type-graphql';
 import { UserResolver } from './resolvers/user-resolver';
 import { appDataSource } from './data-source';
 import { Hello } from './resolvers/hello';
-import envRequestVariables from './utils/request-variables';
 import formatError from './exceptionsClass/my-format-error';
-
-const port = envRequestVariables().DB_HOST;
-
-const mode = process.env.NODE_ENV;
 
 const main = async () => {
   await appDataSource.initialize();
@@ -26,8 +21,10 @@ const main = async () => {
   });
 
   await server
-    .listen({ port })
-    .then(({ url }) => console.log(`\n Iniciando serviço em no modo: ${mode}... \n Servidor on na porta: ${url}...`));
+    .listen({ port: process.env.DB_HOST })
+    .then(({ url }) =>
+      console.log(`\n Iniciando serviço como: ${process.env.NODE_ENV}... \n Servidor on na porta: ${url}...`),
+    );
 };
 
 main();

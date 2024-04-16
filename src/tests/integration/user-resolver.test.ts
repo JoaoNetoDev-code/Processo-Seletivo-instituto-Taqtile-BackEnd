@@ -9,6 +9,7 @@ import {
   loginMutation,
   updateUserMutation,
 } from '../resolvers/user-resolver-test';
+
 import {
   CreateUserType,
   DeleteUserType,
@@ -20,12 +21,10 @@ import {
 import { appDataSource } from '../../data-source';
 import { User } from '../../entity/user';
 
-import envRequestVariables from '../../utils/request-variables';
 import { createUser, dateFuture } from '../mock-users/users-mock';
 import argonUtil from '../../utils/argon-util';
 
-const PORT = envRequestVariables().DB_HOST;
-const URL = `http://localhost:${PORT}`;
+const URL = `http://localhost:${process.env.DB_HOST}`;
 
 describe('Testando user-resolver', async () => {
   const users = appDataSource.getRepository(User);

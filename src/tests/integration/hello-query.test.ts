@@ -3,10 +3,11 @@ import { describe, it } from 'mocha';
 import { expect } from 'chai';
 
 import helloQuery from '../resolvers/hello-resolver-test';
-import envRequestVariables from '../../utils/request-variables';
+import envRequest from '../../utils/env-request';
 
-const PORT = envRequestVariables().DB_HOST;
-const URL = `http://localhost:${PORT}`;
+envRequest();
+
+const URL = `http://localhost:${process.env.DB_HOST}`;
 
 describe('Testando a QUERY hello', () => {
   it("A QUERY deve retornar a string 'Hello, world!' ao ser chamada.", async () => {
