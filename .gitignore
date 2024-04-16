@@ -5,4 +5,5 @@ build/
 tmp/
 temp/
 .env
+.env.test
 .nyc_output/
