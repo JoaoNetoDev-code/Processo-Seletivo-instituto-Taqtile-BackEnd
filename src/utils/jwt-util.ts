@@ -1,5 +1,6 @@
 import { sign, verify } from 'jsonwebtoken';
 import { CustomError } from '../exceptionsClass/exceptions-not-found-user';
+import timeExpiration from './time-expiration';
 
 interface IPayload {
   id: number;
@@ -16,12 +17,9 @@ const verifyToken = (token: string) => {
   }
 };
 
-const signToken = (payload: IPayload) => {
-  const expiresIn = 3600;
-  const exp = Math.floor(Date.now() / 1000) + expiresIn;
-
+const signToken = (payload: IPayload, rememberMe: boolean) => {
   try {
-    return sign({ ...payload, exp }, secret);
+    return sign({ ...payload, ex: timeExpiration(rememberMe) }, secret);
   } catch (err) {
     throw new Error(`Erro ao realizar o encode: ${err}`);
   }

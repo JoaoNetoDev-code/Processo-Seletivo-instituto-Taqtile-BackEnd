@@ -3,7 +3,7 @@ import { Resolver, Mutation, Query, Arg } from 'type-graphql';
 
 import { appDataSource } from '../data-source';
 import { CustomError } from '../exceptionsClass/exceptions-not-found-user';
-import { CreateUserInput, UpdatedUserInput } from './input-validation/user-input-validation';
+import { CreateUserInput, LoginUserInput, UpdatedUserInput } from './input-validation/user-input-validation';
 import { User } from '../entity/user';
 
 import argonUtil from '../utils/argon-util';
@@ -19,8 +19,8 @@ export class UserResolver {
   }
 
   @Mutation(() => LoginValid)
-  async login(@Arg('email') email: string, @Arg('password') password: string): Promise<LoginValid> {
-    const findUser = await this.users.findOne({ where: { email } });
+  async login(@Arg('LoginUser') loginData: LoginUserInput): Promise<LoginValid> {
+    const findUser = await this.users.findOne({ where: { email: loginData.email } });
 
     if (!findUser) {
       throw new CustomError(
@@ -30,7 +30,7 @@ export class UserResolver {
       );
     }
 
-    const argonVerify = await argonUtil.verifyHashPassword(findUser.password, password);
+    const argonVerify = await argonUtil.verifyHashPassword(findUser.password, loginData.password);
 
     if (!argonVerify) {
       throw new CustomError(
@@ -40,7 +40,7 @@ export class UserResolver {
       );
     }
 
-    const sessionToken = jwtUtil.signToken({ name: findUser.name, id: findUser.id });
+    const sessionToken = jwtUtil.signToken({ name: findUser.name, id: findUser.id }, loginData.rememberMe);
 
     return {
       user: findUser,
