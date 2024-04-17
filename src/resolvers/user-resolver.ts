@@ -1,5 +1,5 @@
 import { UserModel, LoginValid } from './../model/user-model';
-import { Resolver, Mutation, Query, Arg } from 'type-graphql';
+import { Resolver, Mutation, Query, Arg, Ctx } from 'type-graphql';
 
 import { appDataSource } from '../data-source';
 import { CustomError } from '../exceptionsClass/exceptions-not-found-user';
@@ -8,6 +8,7 @@ import { User } from '../entity/user';
 
 import argonUtil from '../utils/argon-util';
 import jwtUtil from '../utils/jwt-util';
+import { IMyContext } from '../types/type-context';
 
 @Resolver()
 export class UserResolver {
@@ -49,8 +50,10 @@ export class UserResolver {
   }
 
   @Mutation(() => UserModel)
-  async createUser(@Arg('userData') userData: CreateUserInput): Promise<UserModel> {
+  async createUser(@Arg('userData') userData: CreateUserInput, @Ctx() context: IMyContext): Promise<UserModel> {
     const userExists = await this.users.findOne({ where: { email: userData.email } });
+
+    jwtUtil.verifyToken(context.token);
 
     if (userExists) {
       throw new CustomError('Erro ao cadastrar novo usuário.', 400, 'Usuário já existe.');

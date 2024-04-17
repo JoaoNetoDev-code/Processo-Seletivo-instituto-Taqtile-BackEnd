@@ -1,5 +1,4 @@
 import 'reflect-metadata';
-
 import { ApolloServer } from 'apollo-server';
 import { buildSchema } from 'type-graphql';
 import { UserResolver } from './resolvers/user-resolver';
@@ -7,6 +6,7 @@ import { appDataSource } from './data-source';
 import { Hello } from './resolvers/hello';
 import formatError from './exceptionsClass/my-format-error';
 import envRequest from './utils/env-request';
+import { IMyContext } from './types/type-context';
 
 envRequest();
 
@@ -21,6 +21,14 @@ export const main = async () => {
     schema,
     debug: false,
     formatError,
+    cache: 'bounded',
+    context: ({ req }): IMyContext => {
+      const authorization = req.headers['authorization'] || '';
+
+      const token = authorization.replace('Bearer ', '');
+
+      return { req, token };
+    },
     cors: {
       origin: '*',
     },
