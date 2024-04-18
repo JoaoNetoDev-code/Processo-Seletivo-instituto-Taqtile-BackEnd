@@ -5,6 +5,7 @@ import { expect } from 'chai';
 import {
   createUserMutation,
   deleteUserMutation,
+  findUserForIdQuery,
   getUserQuery,
   loginMutation,
   updateUserMutation,
@@ -16,6 +17,7 @@ import {
   GetUsersType,
   LoginTypeReturn,
   UpdatedUserType,
+  findForIdUserType,
 } from '../../types/get-users-type';
 
 import { appDataSource } from '../../data-source';
@@ -26,6 +28,7 @@ import argonUtil from '../../utils/argon-util';
 import { main } from '../../main';
 import jwtUtil from '../../utils/jwt-util';
 import helloQuery from '../resolvers/hello-resolver-test';
+import exp from 'constants';
 
 const URL = `http://localhost:${process.env.DB_HOST}`;
 
@@ -275,5 +278,79 @@ describe('Testando user-resolver', async () => {
 
     expect(response.status).to.equal(200);
     expect(response.data.data.deleteUser).to.be.equal('Usuário removido com sucesso!');
+  });
+
+  it('A QUERY getUserById deve retorna um status code:401 e a mensagem: "Erro ao realizar o decode: JsonWebTokenError: jwt malformed" quando não encontrar um token valido no header.', async () => {
+    const newUser = await users.save(createUser);
+
+    const response = await axios.post(
+      URL,
+      {
+        query: findUserForIdQuery,
+        variables: {
+          getUserByIdId: newUser.id,
+        },
+      },
+      {
+        headers: {
+          Authorization: `Bearer tokeninvalido`,
+        },
+      },
+    );
+
+    expect(response.data.errors[0].code).to.equal(401);
+    expect(response.data.errors[0].message).to.equal('Erro ao realizar o decode: JsonWebTokenError: jwt malformed');
+  });
+
+  it('A QUERY getUserById deve retorna um usuário ao ser chamada com um id valido.', async () => {
+    const newUser = await users.save(createUser);
+
+    const payload = { id: 1, name: 'User' };
+
+    const token = jwtUtil.signToken(payload, true);
+
+    const response: AxiosResponse<{ data: findForIdUserType }> = await axios.post(
+      URL,
+      {
+        query: findUserForIdQuery,
+        variables: {
+          getUserByIdId: newUser.id,
+        },
+      },
+      {
+        headers: {
+          Authorization: `Bearer ${token}`,
+        },
+      },
+    );
+
+    expect(response.status).to.equal(200);
+    expect(response.data.data.getUserById.id).to.be.deep.equal(newUser.id);
+    expect(response.data.data.getUserById.name).to.be.deep.equal(newUser.name);
+    expect(response.data.data.getUserById.email).to.be.deep.equal(newUser.email);
+  });
+
+  it('A QUERY getUserById deve retorna um status code: 404 e a mensagem: "Usuário não encontrado." ao ser chamada com um id invalido.', async () => {
+    const payload = { id: 1, name: 'User' };
+
+    const token = jwtUtil.signToken(payload, true);
+
+    const response = await axios.post(
+      URL,
+      {
+        query: findUserForIdQuery,
+        variables: {
+          getUserByIdId: 0,
+        },
+      },
+      {
+        headers: {
+          Authorization: `Bearer ${token}`,
+        },
+      },
+    );
+
+    expect(response.data.errors[0].code).to.equal(404);
+    expect(response.data.errors[0].message).to.equal('Usuário não encontrado.');
   });
 });
