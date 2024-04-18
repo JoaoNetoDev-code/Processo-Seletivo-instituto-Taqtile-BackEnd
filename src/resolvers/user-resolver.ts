@@ -15,11 +15,19 @@ export class UserResolver {
   users = appDataSource.getRepository(User);
 
   @Query(() => [UserModel])
-  async getUsers(@Arg('qtdSearch'!) qtdSearch: number, @Ctx() context: IMyContext): Promise<UserModel[]> {
+  async getUsers(
+    @Arg('page') page: number,
+    @Arg('limit') limit: number,
+    @Ctx() context: IMyContext,
+  ): Promise<UserModel[]> {
     jwtUtil.verifyToken(context.token);
 
+    const take = limit || 10;
+    const currentPage = page === null ? 0 : page;
+
     const users = await this.users.find({
-      take: qtdSearch || 10,
+      take,
+      skip: currentPage * take,
       order: { name: 'ASC' },
     });
 
