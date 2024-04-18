@@ -15,8 +15,15 @@ export class UserResolver {
   users = appDataSource.getRepository(User);
 
   @Query(() => [UserModel])
-  async getUsers() {
-    return this.users.find();
+  async getUsers(@Arg('qtdSearch'!) qtdSearch: number, @Ctx() context: IMyContext): Promise<UserModel[]> {
+    jwtUtil.verifyToken(context.token);
+
+    const users = await this.users.find({
+      take: qtdSearch || 10,
+      order: { name: 'ASC' },
+    });
+
+    return users;
   }
 
   @Query(() => UserModel)
