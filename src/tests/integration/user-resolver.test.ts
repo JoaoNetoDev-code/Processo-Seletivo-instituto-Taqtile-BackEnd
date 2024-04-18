@@ -28,7 +28,6 @@ import argonUtil from '../../utils/argon-util';
 import { main } from '../../main';
 import jwtUtil from '../../utils/jwt-util';
 import helloQuery from '../resolvers/hello-resolver-test';
-import exp from 'constants';
 
 const URL = `http://localhost:${process.env.DB_HOST}`;
 
@@ -280,7 +279,7 @@ describe('Testando user-resolver', async () => {
     expect(response.data.data.deleteUser).to.be.equal('Usuário removido com sucesso!');
   });
 
-  it('A QUERY getUserById deve retorna um status code:401 e a mensagem: "Erro ao realizar o decode: JsonWebTokenError: jwt malformed" quando não encontrar um token valido no header.', async () => {
+  it('A QUERY getUserById deve retorna um status code:401 e a mensagem: "você precisa estar autenticado para realizar essa ação" quando não encontrar um token valido no header.', async () => {
     const newUser = await users.save(createUser);
 
     const response = await axios.post(
@@ -299,7 +298,7 @@ describe('Testando user-resolver', async () => {
     );
 
     expect(response.data.errors[0].code).to.equal(401);
-    expect(response.data.errors[0].message).to.equal('Erro ao realizar o decode: JsonWebTokenError: jwt malformed');
+    expect(response.data.errors[0].message).to.equal('você precisa estar autenticado para realizar essa ação');
   });
 
   it('A QUERY getUserById deve retorna um usuário ao ser chamada com um id valido.', async () => {
