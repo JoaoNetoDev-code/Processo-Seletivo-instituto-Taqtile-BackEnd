@@ -15,7 +15,11 @@ const verifyToken = (token: string) => {
   try {
     return verify(token, secret);
   } catch (err) {
-    throw new CustomError(`Erro ao realizar o decode: ${err}`, 401, 'Por favor realize login novamente.');
+    throw new CustomError(
+      `você precisa estar autenticado para realizar essa ação`,
+      401,
+      'Por favor realize login novamente.',
+    );
   }
 };
 

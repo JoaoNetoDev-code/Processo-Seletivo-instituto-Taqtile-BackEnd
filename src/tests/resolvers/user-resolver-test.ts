@@ -45,3 +45,13 @@ mutation($loginUser: LoginUserInput!) {
     token
   }
 }`;
+
+export const findUserForIdQuery = `
+query($getUserByIdId: Float!) {
+  getUserById(id: $getUserByIdId) {
+    id
+    name
+    email
+    birthDate
+  }
+}`;

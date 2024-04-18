@@ -12,6 +12,10 @@ export type DeleteUserType = {
   deleteUser: UserModel;
 };
 
+export type findForIdUserType = {
+  getUserById: UserModel;
+};
+
 export type UpdatedUserType = {
   updateUser: UserModel;
 };
