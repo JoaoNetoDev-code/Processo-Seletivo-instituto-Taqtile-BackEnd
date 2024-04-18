@@ -1,6 +1,6 @@
 import { faker } from '@faker-js/faker/locale/pt_BR';
 
-const prefix = (Math.floor(Math.random() * 10) + 1).toString();
+export const prefix = (Math.floor(Math.random() * 10) + 1).toString();
 
 export const createUser = () => {
   return {
