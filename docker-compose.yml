@@ -1,31 +1,25 @@
-version: '3.8'
-
 services:
   localdb:
     container_name: postgres-dev
     image: postgres:latest
     ports:
-      - '${DB_PORT_DEV}:5432'
+      - '5432:5432'
     volumes:
       - ./db/dumps:/app-db-dumps
     restart: always
     environment:
-      - POSTGRES_USER=${DB_USERNAME_DEV}
-      - POSTGRES_PASSWORD=${DB_PASSWORD_DEV}
-      - POSTGRES_DB=${DB_DATABASE_DEV}
-    env_file:
-      - .env
+      - POSTGRES_USER=db_dev
+      - POSTGRES_PASSWORD=12345
+      - POSTGRES_DB=dev
 
   testdb:
     container_name: postgres-test
     image: postgres:latest
     ports:
-      - '${DB_PORT_TEST}:5432'
+      - '5433:5432'
     volumes:
       - ./db/dumps:/app-db-dumps
     environment:
-      - POSTGRES_USER=${DB_USERNAME_TEST}
-      - POSTGRES_PASSWORD=${DB_PASSWORD_TEST}
-      - POSTGRES_DB=${DB_DATABASE_TEST}
-    env_file:
-      - .env
+      - POSTGRES_USER=db_test
+      - POSTGRES_PASSWORD=12345
+      - POSTGRES_DB=test

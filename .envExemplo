@@ -1,17 +1,21 @@
 # Configurações do banco de dados para ambiente de desenvolvimento
+#.env
 
-DB_PORT_DEV= "Porta do banco de dados"
-DB_HOST_DEV= "Numero da porta que deseja"
-DB_USERNAME_DEV= "Nome de usuário do banco de dados"
-DB_PASSWORD_DEV= "Senha do banco de dados"
-DB_DATABASE_DEV= "Nome do banco de dados"
-JWT_SECRET_DEV= "sua seha jwt"
+DB_PORT= "Porta do banco de dados"
+DB_HOST= "Numero da porta que deseja"
+DB_USERNAME= "Nome de usuário do banco de dados"
+DB_PASSWORD= "Senha do banco de dados"
+DB_DATABASE= "Nome do banco de dados"
+
+JWT_SECRET= "sua seha jwt"
 
 # Configurações do banco de dados para ambiente de teste
+# .env.test
 
-DB_PORT_TEST= "Porta do banco de dados"
-DB_HOST_TEST= "Numero da porta que deseja"
-DB_USERNAME_TEST= "Nome de usuário do banco de dados"
-DB_PASSWORD_TEST= "Senha do banco de dados"
-DB_DATABASE_TEST= "Nome do banco de dados"
-JWT_SECRET_TEST= "sua seha jwt"
+DB_PORT= "Porta do banco de dados"
+DB_HOST= "Numero da porta que deseja"
+DB_USERNAME= "Nome de usuário do banco de dados"
+DB_PASSWORD= "Senha do banco de dados"
+DB_DATABASE= "Nome do banco de dados"
+
+JWT_SECRET= "sua seha jwt"

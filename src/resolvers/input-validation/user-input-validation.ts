@@ -43,3 +43,18 @@ export class UpdatedUserInput {
   @MaxDate(() => new Date(), { message: 'Deve ser uma data presente ou passada.' })
   birthDate?: Date;
 }
+
+@InputType()
+export class LoginUserInput {
+  @Field({ nullable: true })
+  @IsEmail({}, { message: 'Por favor, insira um endereço de e-mail válido.' })
+  email: string;
+
+  @Field({ nullable: true })
+  @MinLength(6, { message: 'A senha deve ter no mínimo 6 caracteres.' })
+  password: string;
+
+  @IsOptional()
+  @Field({ defaultValue: false })
+  rememberMe?: boolean;
+}
