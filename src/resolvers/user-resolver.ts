@@ -19,6 +19,19 @@ export class UserResolver {
     return this.users.find();
   }
 
+  @Query(() => UserModel)
+  async getUserById(@Arg('id') id: number, @Ctx() context: IMyContext): Promise<UserModel> {
+    const user = await this.users.findOne({ where: { id } });
+
+    jwtUtil.verifyToken(context.token);
+
+    if (!user) {
+      throw new CustomError('Usuário não encontrado.', 404, 'Não foi possível localizar o usuário.');
+    }
+
+    return user;
+  }
+
   @Mutation(() => LoginValid)
   async login(@Arg('LoginUser') loginData: LoginUserInput): Promise<LoginValid> {
     const findUser = await this.users.findOne({ where: { email: loginData.email } });
