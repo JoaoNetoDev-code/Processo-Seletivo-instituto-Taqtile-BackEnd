@@ -1,11 +1,13 @@
 import { sign, verify } from 'jsonwebtoken';
 import { CustomError } from '../exceptionsClass/exceptions-not-found-user';
 import timeExpiration from './time-expiration';
+import envRequest from './env-request';
 
 interface IPayload {
   id: number;
   name: string;
 }
+envRequest();
 
 const secret = process.env.JWT_SECRET;
 
@@ -19,7 +21,7 @@ const verifyToken = (token: string) => {
 
 const signToken = (payload: IPayload, rememberMe: boolean) => {
   try {
-    return sign({ ...payload, ex: timeExpiration(rememberMe) }, secret);
+    return sign(payload, secret, { expiresIn: timeExpiration(rememberMe) });
   } catch (err) {
     throw new Error(`Erro ao realizar o encode: ${err}`);
   }

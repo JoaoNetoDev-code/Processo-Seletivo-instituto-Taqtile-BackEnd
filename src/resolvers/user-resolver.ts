@@ -41,7 +41,7 @@ export class UserResolver {
       );
     }
 
-    const sessionToken = jwtUtil.signToken({ name: findUser.name, id: findUser.id }, loginData.rememberMe);
+    const sessionToken = jwtUtil.signToken({ id: findUser.id, name: findUser.name }, loginData.rememberMe);
 
     return {
       user: findUser,
@@ -59,9 +59,9 @@ export class UserResolver {
       throw new CustomError('Erro ao cadastrar novo usuário.', 400, 'Usuário já existe.');
     }
 
-    const token = await argonUtil.signHashPassword(userData.password);
+    const hashPassword = await argonUtil.signHashPassword(userData.password);
 
-    return this.users.save({ ...userData, password: token });
+    return this.users.save({ ...userData, password: hashPassword });
   }
 
   @Mutation(() => String)
@@ -80,13 +80,14 @@ export class UserResolver {
   @Mutation(() => UserModel)
   async updateUser(@Arg('id') id: number, @Arg('userData') userData: UpdatedUserInput): Promise<UserModel> {
     const userExists = await this.users.findOne({ where: { id } });
-    const emailIsDuplicate = await this.users.findOne({ where: { email: userData.email } });
 
     if (!userExists) {
       throw new CustomError('Usuário não encontrado.', 400, 'Não foi possivel encontar o usuario solicitado.');
     }
 
-    if (emailIsDuplicate && emailIsDuplicate.id !== userExists.id) {
+    const emailExists = await this.users.findOne({ where: { email: userData.email } });
+
+    if (emailExists && userExists.id !== emailExists.id) {
       throw new CustomError(
         'O e-mail fornecido já está em uso por outro usuário.',
         400,
