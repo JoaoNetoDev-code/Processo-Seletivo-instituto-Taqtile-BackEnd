@@ -1,9 +1,9 @@
 export const getUserQuery = `
-query {
-  getUsers {
-    id
-    name
-    email
+query($limit: Float!, $page: Float!) {
+  getUsers(limit: $limit, page: $page) {
+    id,
+    name,
+    email,
     birthDate
   }
 }`;
