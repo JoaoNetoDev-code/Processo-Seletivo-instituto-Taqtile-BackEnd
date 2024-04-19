@@ -23,11 +23,10 @@ export class UserResolver {
     jwtUtil.verifyToken(context.token);
 
     const take = limit || 10;
-    const currentPage = page === null ? 0 : page;
 
     const users = await this.users.find({
       take,
-      skip: currentPage * take,
+      skip: page * take,
       order: { name: 'ASC' },
     });
 

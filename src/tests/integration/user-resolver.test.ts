@@ -1,3 +1,4 @@
+import { UserModel } from './../../model/user-model';
 import axios, { AxiosResponse } from 'axios';
 import { after, before, describe, it } from 'mocha';
 import { expect } from 'chai';
@@ -14,6 +15,7 @@ import {
 import {
   CreateUserType,
   DeleteUserType,
+  GetUsersType,
   LoginTypeReturn,
   UpdatedUserType,
   findForIdUserType,
@@ -78,6 +80,33 @@ describe('Testando user-resolver', async () => {
 
     expect(response.data.errors[0].code).to.equal(401);
     expect(response.data.errors[0].message).to.equal('você precisa estar autenticado para realizar essa ação');
+  });
+
+  it('A QUERY getUser deve retorna um status code:200 e a os dados do user quando chamada com um token valido no header.', async () => {
+    const payload = { id: 1, name: 'User' };
+
+    const token = jwtUtil.signToken(payload, true);
+
+    const response: AxiosResponse<{ data: GetUsersType }> = await axios.post(
+      URL,
+      {
+        query: getUserQuery,
+        variables: {
+          limit: 1,
+          page: 1,
+        },
+      },
+      {
+        headers: {
+          Authorization: `Bearer ${token}`,
+        },
+      },
+    );
+
+    const userRepository = await users.find();
+
+    expect(response.status).to.equal(200);
+    expect(response.data.data.getUsers.length).to.equal(userRepository.length);
   });
 
   it('A MUTATION createUser deve retornar as informações do usuário criado em caso de SUCESSO.', async () => {
