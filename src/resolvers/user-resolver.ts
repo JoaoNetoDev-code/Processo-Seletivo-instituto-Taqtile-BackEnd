@@ -15,8 +15,22 @@ export class UserResolver {
   users = appDataSource.getRepository(User);
 
   @Query(() => [UserModel])
-  async getUsers() {
-    return this.users.find();
+  async getUsers(
+    @Arg('page') page: number,
+    @Arg('limit') limit: number,
+    @Ctx() context: IMyContext,
+  ): Promise<UserModel[]> {
+    jwtUtil.verifyToken(context.token);
+
+    const take = limit || 10;
+
+    const users = await this.users.find({
+      take,
+      skip: page * take,
+      order: { name: 'ASC' },
+    });
+
+    return users;
   }
 
   @Query(() => UserModel)
