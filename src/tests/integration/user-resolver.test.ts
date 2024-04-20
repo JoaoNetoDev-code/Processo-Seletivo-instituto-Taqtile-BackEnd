@@ -45,11 +45,11 @@ describe('Testando user-resolver', async () => {
   });
 
   beforeEach('ANTES DE CADA TESTE', async () => {
-    await users.clear();
+    await users.delete({});
   });
 
   afterEach('DEPOIS DE CADA TESTE', async () => {
-    await users.clear();
+    await users.delete({});
   });
 
   it("A QUERY deve retornar a string 'Hello, world!' ao ser chamada.", async () => {

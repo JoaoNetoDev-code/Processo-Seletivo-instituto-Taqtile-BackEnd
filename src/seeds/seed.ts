@@ -8,6 +8,7 @@ import { usersFactory } from './factory/user-factotry';
 import MainSeeder from './main.seed';
 
 import envRequest from '../utils/env-request';
+import { Address } from '../entity/address';
 
 envRequest();
 
@@ -18,7 +19,7 @@ const options: DataSourceOptions & SeederOptions = {
   username: process.env.DB_USERNAME,
   password: process.env.DB_PASSWORD,
   database: process.env.DB_DATABASE,
-  entities: [User],
+  entities: [User, Address],
   factories: [usersFactory],
   seeds: [MainSeeder],
 };

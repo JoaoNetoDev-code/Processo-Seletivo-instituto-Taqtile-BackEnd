@@ -7,6 +7,7 @@ import { Hello } from './resolvers/hello';
 import formatError from './exceptionsClass/my-format-error';
 import envRequest from './utils/env-request';
 import { IMyContext } from './types/type-context';
+import { AddressResolvers } from './resolvers/address-reolvers';
 
 envRequest();
 
@@ -14,7 +15,8 @@ export const main = async () => {
   await appDataSource.initialize();
 
   const schema = await buildSchema({
-    resolvers: [Hello, UserResolver],
+    resolvers: [Hello, UserResolver, AddressResolvers],
+    validate: { forbidUnknownValues: false },
   });
 
   const server = new ApolloServer({

@@ -1,6 +1,7 @@
 import { DataSource } from 'typeorm';
 import { User } from './entity/user';
 import envRequest from './utils/env-request';
+import { Address } from './entity/address';
 
 envRequest();
 
@@ -13,7 +14,7 @@ export const appDataSource = new DataSource({
   database: process.env.DB_DATABASE,
   synchronize: true,
   logging: false,
-  entities: [User],
+  entities: [User, Address],
   migrations: [],
   subscribers: [],
 });
