@@ -2,7 +2,7 @@ import { faker } from '@faker-js/faker/locale/pt_BR';
 
 export const prefix = (Math.floor(Math.random() * 10) + 1).toString();
 
-export const createUser = () => {
+export const createUserMock = () => {
   return {
     name: faker.internet.userName(),
     email: faker.internet.email(),
