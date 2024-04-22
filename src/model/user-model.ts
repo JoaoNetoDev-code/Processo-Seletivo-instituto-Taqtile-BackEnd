@@ -1,4 +1,5 @@
 import { Field, ObjectType } from 'type-graphql';
+import { AddressModel } from './address-model';
 
 @ObjectType()
 export class UserModel {
@@ -13,6 +14,9 @@ export class UserModel {
 
   @Field()
   birthDate: Date;
+
+  @Field(() => [AddressModel])
+  addresses: AddressModel[];
 }
 
 @ObjectType()

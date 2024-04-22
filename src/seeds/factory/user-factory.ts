@@ -9,6 +9,5 @@ export const usersFactory = setSeederFactory(User, (faker: Faker) => {
   user.email = faker.internet.email();
   user.birthDate = faker.date.birthdate({ refDate: new Date() });
   user.password = faker.internet.password({ memorable: true, prefix, pattern: /[a-zA-Z0-9]+/ });
-
   return user;
 });

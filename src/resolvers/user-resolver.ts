@@ -24,13 +24,11 @@ export class UserResolver {
 
     const take = limit || 10;
 
-    const users = await this.users.find({
+    return this.users.find({
       take,
       skip: page * take,
       order: { name: 'ASC' },
     });
-
-    return users;
   }
 
   @Query(() => UserModel)
@@ -92,7 +90,9 @@ export class UserResolver {
   }
 
   @Mutation(() => String)
-  async deleteUser(@Arg('id') id: number): Promise<string> {
+  async deleteUser(@Arg('id') id: number, @Ctx() context: IMyContext): Promise<string> {
+    jwtUtil.verifyToken(context.token);
+
     const userExists = await this.users.findOne({ where: { id } });
 
     if (!userExists) {
@@ -105,7 +105,13 @@ export class UserResolver {
   }
 
   @Mutation(() => UserModel)
-  async updateUser(@Arg('id') id: number, @Arg('userData') userData: UpdatedUserInput): Promise<UserModel> {
+  async updateUser(
+    @Arg('id') id: number,
+    @Arg('userData') userData: UpdatedUserInput,
+    @Ctx() context: IMyContext,
+  ): Promise<UserModel> {
+    jwtUtil.verifyToken(context.token);
+
     const userExists = await this.users.findOne({ where: { id } });
 
     if (!userExists) {
