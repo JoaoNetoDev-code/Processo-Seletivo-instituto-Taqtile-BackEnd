@@ -28,8 +28,8 @@ import argonUtil from '../../utils/argon-util';
 import { main } from '../../main';
 import jwtUtil from '../../utils/jwt-util';
 import helloQuery from '../resolvers/hello-resolver-test';
-import { GetAllAddressType } from '../../types/address-type';
-import { createAddress } from '../resolvers/address-resolver-test';
+import { createAddresstype, getAllAddressInUserType, getAllAddressType } from '../../types/address-type';
+import { createAddressTest, getAllAddressInUserTest, getAllAddressTest } from '../resolvers/address-resolver-test';
 import { Address } from '../../entity/address';
 import { createAddressMock } from '../mock-users/address-mock';
 
@@ -59,14 +59,14 @@ describe.only('Testes de E2E.', async () => {
   });
 
   context('Testes E2E para address-resolver', async () => {
-    it('a Mutation createAddress deve retornar o address criado no banco.', async () => {
+    it('A Mutation createAddress deve retornar o address criado no banco.', async () => {
       const user = await userRepository.save(createUserMock());
       const address = createAddressMock(user.id);
 
-      const response: AxiosResponse<{ data: GetAllAddressType }> = await axios.post(
+      const response: AxiosResponse<{ data: createAddresstype }> = await axios.post(
         URL,
         {
-          query: createAddress,
+          query: createAddressTest,
           variables: {
             address,
           },
@@ -91,14 +91,14 @@ describe.only('Testes de E2E.', async () => {
       expect(response.data.data.createAddress.userId).to.deep.equal(addressCreated.userId);
     });
 
-    it('a Mutation createAddress deve retorna um status code:401 e a mensagem: "você precisa estar autenticado para realizar essa ação" quando não encontrar um token valido no header.', async () => {
+    it('A Mutation createAddress deve retorna um status code:401 e a mensagem: "você precisa estar autenticado para realizar essa ação" quando não encontrar um token valido no header.', async () => {
       const user = await userRepository.save(createUserMock());
       const address = createAddressMock(user.id);
 
       const response = await axios.post(
         URL,
         {
-          query: createAddress,
+          query: createAddressTest,
           variables: {
             address,
           },
@@ -106,6 +106,96 @@ describe.only('Testes de E2E.', async () => {
         {
           headers: {
             Authorization: `Bearer xablauziho`,
+          },
+        },
+      );
+
+      expect(response.data.errors[0].code).to.equal(401);
+      expect(response.data.errors[0].message).to.equal('você precisa estar autenticado para realizar essa ação');
+    });
+
+    it('A Query getAllAddress deve retornar todos os address existentes no banco.', async () => {
+      const response: AxiosResponse<{ data: getAllAddressType }> = await axios.post(
+        URL,
+        {
+          query: getAllAddressTest,
+          variables: {
+            limit: 0,
+            page: 0,
+          },
+        },
+        {
+          headers: {
+            Authorization: `Bearer ${token}`,
+          },
+        },
+      );
+
+      const allAddress = await addressRepository.find();
+
+      expect(response.status).to.equal(200);
+      expect(response.data.data.getAllAddress.length).to.be.equal(allAddress.length);
+    });
+
+    it('A Query getAllAddress deve retorna um status code:401 e a mensagem: "você precisa estar autenticado para realizar essa ação" quando não encontrar um token valido no header.', async () => {
+      const response = await axios.post(
+        URL,
+        {
+          query: getAllAddressTest,
+          variables: {
+            limit: 0,
+            page: 0,
+          },
+        },
+        {
+          headers: {
+            Authorization: `Bearer catatau`,
+          },
+        },
+      );
+
+      expect(response.data.errors[0].code).to.equal(401);
+      expect(response.data.errors[0].message).to.equal('você precisa estar autenticado para realizar essa ação');
+    });
+
+    it('A Query getAllAddressInUser deve retornar todos os address associados a um userId especifico existentes no banco.', async () => {
+      const user = await userRepository.save(createUserMock());
+
+      const response: AxiosResponse<{ data: getAllAddressInUserType }> = await axios.post(
+        URL,
+        {
+          query: getAllAddressInUserTest,
+          variables: {
+            userId: user.id,
+          },
+        },
+        {
+          headers: {
+            Authorization: `Bearer ${token}`,
+          },
+        },
+      );
+
+      const allAddress = await addressRepository.find();
+
+      expect(response.status).to.equal(200);
+      expect(response.data.data.getAllAddressInUser.length).to.be.equal(allAddress.length);
+    });
+
+    it('A Query getAllAddressInUser deve retorna um status code:401 e a mensagem: "você precisa estar autenticado para realizar essa ação" quando não encontrar um token valido no header.', async () => {
+      const user = await userRepository.save(createUserMock());
+
+      const response = await axios.post(
+        URL,
+        {
+          query: getAllAddressInUserTest,
+          variables: {
+            userId: user.id,
+          },
+        },
+        {
+          headers: {
+            Authorization: `Bearer biruleibe`,
           },
         },
       );
