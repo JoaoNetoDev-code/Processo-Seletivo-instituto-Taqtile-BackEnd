@@ -33,6 +33,8 @@ import helloQuery from '../resolvers/hello-resolver-test';
 const URL = `http://localhost:${process.env.DB_HOST}`;
 
 describe('Testando user-resolver', async () => {
+  const payload = { id: 1, name: 'User' };
+  const token = jwtUtil.signToken(payload, true);
   const users = appDataSource.getRepository(User);
   let server;
 
@@ -83,10 +85,6 @@ describe('Testando user-resolver', async () => {
   });
 
   it('A QUERY getUser deve retorna um status code:200 e a os dados do user quando chamada com um token valido no header.', async () => {
-    const payload = { id: 1, name: 'User' };
-
-    const token = jwtUtil.signToken(payload, true);
-
     const response: AxiosResponse<{ data: GetUsersType }> = await axios.post(
       URL,
       {
@@ -110,10 +108,7 @@ describe('Testando user-resolver', async () => {
   });
 
   it('A MUTATION createUser deve retornar as informações do usuário criado em caso de SUCESSO.', async () => {
-    const payload = { id: 1, name: 'User' };
     const userCreate = createUser();
-
-    const token = jwtUtil.signToken(payload, true);
 
     const response: AxiosResponse<{ data: CreateUserType }> = await axios.post(
       URL,
@@ -141,13 +136,10 @@ describe('Testando user-resolver', async () => {
     expect(response.data.data.createUser.email).to.deep.equal(userCreate.email);
   });
 
-  it('A MUTATION createUser deve esta autenticada retornar as informações do usuário criado em caso de SUCESSO.', async () => {
-    const payload = { id: 1, name: 'User' };
+  it('A MUTATION createUser deve retorna um status code:401 e a mensagem: "você precisa estar autenticado para realizar essa ação" quando não encontrar um token valido no header.', async () => {
     const userCreate = createUser();
 
-    const token = jwtUtil.signToken(payload, true);
-
-    const response: AxiosResponse<{ data: CreateUserType }> = await axios.post(
+    const response = await axios.post(
       URL,
       {
         query: createUserMutation,
@@ -157,30 +149,30 @@ describe('Testando user-resolver', async () => {
       },
       {
         headers: {
-          Authorization: `Bearer ${token}`,
+          Authorization: `Bearer asasasa`,
         },
       },
     );
-
-    const userInsert = await users.findOne({ where: { id: response.data.data.createUser.id } });
-
-    expect(response.status).to.equal(200);
-    expect(response.data.data.createUser.name).to.deep.equal(userInsert.name);
-    expect(response.data.data.createUser.email).to.deep.equal(userInsert.email);
-    expect(response.data.data.createUser.id).to.deep.equal(userInsert.id);
-
-    expect(response.data.data.createUser.name).to.deep.equal(userCreate.name);
-    expect(response.data.data.createUser.email).to.deep.equal(userCreate.email);
+    expect(response.data.errors[0].code).to.equal(401);
+    expect(response.data.errors[0].message).to.equal('você precisa estar autenticado para realizar essa ação');
   });
 
   it('A MUTATION createUser deve retornar um STATUS:200 e a mensagem: "Por favor, insira um endereço de e-mail válido." caso o atributo email seja inválido.', async () => {
     const user = createUser();
-    const response = await axios.post(URL, {
-      query: createUserMutation,
-      variables: {
-        userData: { ...user, email: 'joao.com' },
+    const response = await axios.post(
+      URL,
+      {
+        query: createUserMutation,
+        variables: {
+          userData: { ...user, email: 'joao.com' },
+        },
       },
-    });
+      {
+        headers: {
+          Authorization: `Bearer ${token}`,
+        },
+      },
+    );
     expect(response.status).to.equal(200);
     expect(response.data.errors[0].extensions.exception.validationErrors[0].constraints.isEmail).to.equal(
       'Por favor, insira um endereço de e-mail válido.',
@@ -189,12 +181,21 @@ describe('Testando user-resolver', async () => {
 
   it('A MUTATION createUser deve retornar um STATUS:200 e a mensagem: "Deve ser uma data presente ou passada." caso o atributo birthDate seja uma data futura.', async () => {
     const user = createUser();
-    const response = await axios.post(URL, {
-      query: createUserMutation,
-      variables: {
-        userData: { ...user, birthDate: dateFuture(10) },
+    const response = await axios.post(
+      URL,
+      {
+        query: createUserMutation,
+        variables: {
+          userData: { ...user, birthDate: dateFuture(10) },
+        },
       },
-    });
+      {
+        headers: {
+          Authorization: `Bearer ${token}`,
+        },
+      },
+    );
+
     expect(response.status).to.equal(200);
     expect(response.data.errors[0].extensions.exception.validationErrors[0].constraints.maxDate).to.equal(
       'Deve ser uma data presente ou passada.',
@@ -202,10 +203,7 @@ describe('Testando user-resolver', async () => {
   });
 
   it('A MUTATION createUser deve retornar um STATUS:200 e a mensagem: "A senha deve ter no mínimo uma letra e um número." caso o password não possua os caracteres desejados.', async () => {
-    const payload = { id: 1, name: 'User' };
     const user = createUser();
-
-    const token = jwtUtil.signToken(payload, true);
 
     const response = await axios.post(
       URL,
@@ -229,12 +227,20 @@ describe('Testando user-resolver', async () => {
 
   it('A MUTATION createUser deve retornar um STATUS:200 e a mensagem: "A senha deve ter no mínimo 6 caracteres." caso o password não tenha um tamanho válido.', async () => {
     const user = createUser();
-    const response = await axios.post(URL, {
-      query: createUserMutation,
-      variables: {
-        userData: { ...user, password: 'a1234' },
+    const response = await axios.post(
+      URL,
+      {
+        query: createUserMutation,
+        variables: {
+          userData: { ...user, password: 'a1234' },
+        },
       },
-    });
+      {
+        headers: {
+          Authorization: `Bearer ${token}`,
+        },
+      },
+    );
 
     expect(response.status).to.equal(200);
     expect(response.data.errors[0].extensions.exception.validationErrors[0].constraints.minLength).to.equal(
@@ -245,18 +251,26 @@ describe('Testando user-resolver', async () => {
   it('A MUTATION updateUser deve ser capaz de retornar o objeto atualizado em caso de SUCESSO', async () => {
     const newUser = await users.save(createUser());
 
-    const response: AxiosResponse<{ data: UpdatedUserType }> = await axios.post(URL, {
-      query: updateUserMutation,
-      variables: {
-        updateUserId: newUser.id,
-        userData: {
-          name: 'joão Neto',
-          birthDate: '12-18-1889',
-          email: 'joaont@gmail.com',
-          password: '123456d',
+    const response: AxiosResponse<{ data: UpdatedUserType }> = await axios.post(
+      URL,
+      {
+        query: updateUserMutation,
+        variables: {
+          updateUserId: newUser.id,
+          userData: {
+            name: 'joão Neto',
+            birthDate: '12-18-1889',
+            email: 'joaont@gmail.com',
+            password: '123456d',
+          },
         },
       },
-    });
+      {
+        headers: {
+          Authorization: `Bearer ${token}`,
+        },
+      },
+    );
 
     expect(response.status).to.equal(200);
     expect(response.data.data.updateUser.email).to.be.not.equal(newUser.email);
@@ -268,17 +282,25 @@ describe('Testando user-resolver', async () => {
   it('A MUTATION updateUser deve ser capaz de atualizar o usuário independentemente da quantidade de parâmetros recebidos', async () => {
     const newUser = await users.save(createUser());
 
-    const response: AxiosResponse<{ data: UpdatedUserType }> = await axios.post(URL, {
-      query: updateUserMutation,
-      variables: {
-        updateUserId: newUser.id,
-        userData: {
-          name: 'sopa de caju',
-          email: newUser.email,
-          birthDate: '12-18-1998',
+    const response: AxiosResponse<{ data: UpdatedUserType }> = await axios.post(
+      URL,
+      {
+        query: updateUserMutation,
+        variables: {
+          updateUserId: newUser.id,
+          userData: {
+            name: 'sopa de caju',
+            email: newUser.email,
+            birthDate: '12-18-1998',
+          },
         },
       },
-    });
+      {
+        headers: {
+          Authorization: `Bearer ${token}`,
+        },
+      },
+    );
 
     expect(response.status).to.equal(200);
 
@@ -289,6 +311,33 @@ describe('Testando user-resolver', async () => {
     expect(response.data.data.updateUser.birthDate).to.be.not.equal(newUser.birthDate);
 
     expect(response.data.data.updateUser.name).to.be.not.equal(newUser.name);
+  });
+
+  it('A MUTATION updateUser deve retorna um status code:401 e a mensagem: "você precisa estar autenticado para realizar essa ação" quando não encontrar um token valido no header.', async () => {
+    const newUser = await users.save(createUser());
+
+    const response = await axios.post(
+      URL,
+      {
+        query: updateUserMutation,
+        variables: {
+          updateUserId: newUser.id,
+          userData: {
+            name: 'sopa de caju',
+            email: newUser.email,
+            birthDate: '12-18-1998',
+          },
+        },
+      },
+      {
+        headers: {
+          Authorization: `Bearer asdads`,
+        },
+      },
+    );
+
+    expect(response.data.errors[0].code).to.equal(401);
+    expect(response.data.errors[0].message).to.equal('você precisa estar autenticado para realizar essa ação');
   });
 
   it('A MUTATION login deve ser capaz de retornar o STATUS 401 ea mensagem "Usuário ou senha inválidos." caso o usuario envie uma email ou senha errada.', async () => {
@@ -334,10 +383,18 @@ describe('Testando user-resolver', async () => {
   });
 
   it('A MUTATION deleteUser deve retornar o STATUS:200 e a mensagem: "Usuário não encontrado." caso não encontre o usuário do id recebido.', async () => {
-    const response = await axios.post(URL, {
-      query: deleteUserMutation,
-      variables: { deleteUserId: 0 },
-    });
+    const response = await axios.post(
+      URL,
+      {
+        query: deleteUserMutation,
+        variables: { deleteUserId: 0 },
+      },
+      {
+        headers: {
+          Authorization: `Bearer ${token}`,
+        },
+      },
+    );
 
     expect(response.status).to.equal(200);
     expect(response.data.errors[0].message).to.equal('Usuário não encontrado.');
@@ -346,13 +403,41 @@ describe('Testando user-resolver', async () => {
   it('A MUTATION deleteUser deve retornar o usuário removido em caso de SUCESSO.', async () => {
     const newUser = await users.save(createUser());
 
-    const response: AxiosResponse<{ data: DeleteUserType }> = await axios.post(URL, {
-      query: deleteUserMutation,
-      variables: { deleteUserId: newUser.id },
-    });
+    const response: AxiosResponse<{ data: DeleteUserType }> = await axios.post(
+      URL,
+      {
+        query: deleteUserMutation,
+        variables: { deleteUserId: newUser.id },
+      },
+      {
+        headers: {
+          Authorization: `Bearer ${token}`,
+        },
+      },
+    );
 
     expect(response.status).to.equal(200);
     expect(response.data.data.deleteUser).to.be.equal('Usuário removido com sucesso!');
+  });
+
+  it('A MUTATION deleteUser deve retorna um status code:401 e a mensagem: "você precisa estar autenticado para realizar essa ação" quando não encontrar um token valido no header.', async () => {
+    const newUser = await users.save(createUser());
+
+    const response = await axios.post(
+      URL,
+      {
+        query: deleteUserMutation,
+        variables: { deleteUserId: newUser.id },
+      },
+      {
+        headers: {
+          Authorization: `Bearer xablau`,
+        },
+      },
+    );
+
+    expect(response.data.errors[0].code).to.equal(401);
+    expect(response.data.errors[0].message).to.equal('você precisa estar autenticado para realizar essa ação');
   });
 
   it('A QUERY getUserById deve retorna um status code:401 e a mensagem: "você precisa estar autenticado para realizar essa ação" quando não encontrar um token valido no header.', async () => {
@@ -380,10 +465,6 @@ describe('Testando user-resolver', async () => {
   it('A QUERY getUserById deve retorna um usuário ao ser chamada com um id valido.', async () => {
     const newUser = await users.save(createUser());
 
-    const payload = { id: 1, name: 'User' };
-
-    const token = jwtUtil.signToken(payload, true);
-
     const response: AxiosResponse<{ data: findForIdUserType }> = await axios.post(
       URL,
       {
@@ -406,10 +487,6 @@ describe('Testando user-resolver', async () => {
   });
 
   it('A QUERY getUserById deve retorna um status code: 404 e a mensagem: "Usuário não encontrado." ao ser chamada com um id invalido.', async () => {
-    const payload = { id: 1, name: 'User' };
-
-    const token = jwtUtil.signToken(payload, true);
-
     const response = await axios.post(
       URL,
       {
