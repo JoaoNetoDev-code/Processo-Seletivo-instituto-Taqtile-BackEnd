@@ -90,7 +90,7 @@ export class UserResolver {
   }
 
   @Mutation(() => String)
-  async deleteUser(@Arg('id') id: number, context: IMyContext): Promise<string> {
+  async deleteUser(@Arg('id') id: number, @Ctx() context: IMyContext): Promise<string> {
     jwtUtil.verifyToken(context.token);
 
     const userExists = await this.users.findOne({ where: { id } });
@@ -108,7 +108,7 @@ export class UserResolver {
   async updateUser(
     @Arg('id') id: number,
     @Arg('userData') userData: UpdatedUserInput,
-    context: IMyContext,
+    @Ctx() context: IMyContext,
   ): Promise<UserModel> {
     jwtUtil.verifyToken(context.token);
 

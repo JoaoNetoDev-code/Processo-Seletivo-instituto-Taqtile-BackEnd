@@ -1,4 +1,4 @@
-import { Resolver, Mutation, Arg, Query } from 'type-graphql';
+import { Resolver, Mutation, Arg, Query, Ctx } from 'type-graphql';
 import { User } from '../entity/user';
 import { appDataSource } from '../data-source';
 import { CustomError } from '../exceptionsClass/exceptions-not-found-user';
@@ -14,7 +14,7 @@ export class AddressResolvers {
   addressServer = appDataSource.getTreeRepository(Address);
 
   @Mutation(() => AddressModel)
-  async createAddress(@Arg('address') address: CreateAddressInput, context: IMyContext): Promise<AddressModel> {
+  async createAddress(@Arg('address') address: CreateAddressInput, @Ctx() context: IMyContext): Promise<AddressModel> {
     jwtUtil.verifyToken(context.token);
 
     const user = await this.userServer.findOne({ where: { id: address.userId } });
@@ -36,7 +36,7 @@ export class AddressResolvers {
   async getAllAddress(
     @Arg('page') page: number,
     @Arg('limit') limit: number,
-    context: IMyContext,
+    @Ctx() context: IMyContext,
   ): Promise<AddressModel[]> {
     jwtUtil.verifyToken(context.token);
 
@@ -49,7 +49,7 @@ export class AddressResolvers {
   }
 
   @Query(() => [AddressModel])
-  async getAllAddressInUser(@Arg('userId') userId: number, context: IMyContext): Promise<AddressModel[]> {
+  async getAllAddressInUser(@Arg('userId') userId: number, @Ctx() context: IMyContext): Promise<AddressModel[]> {
     jwtUtil.verifyToken(context.token);
 
     const user = await this.userServer.findOne({ where: { id: userId } });
