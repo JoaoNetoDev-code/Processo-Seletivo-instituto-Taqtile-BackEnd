@@ -32,4 +32,11 @@ export class AddressResolvers {
   async getAllAddress(): Promise<AddressModel[]> {
     return this.addressServer.find();
   }
+
+  @Query(() => [AddressModel])
+  async getAllAddressInUser(@Arg('userId') userId: number): Promise<AddressModel[]> {
+    const users = await this.userServer.findOne({ where: { id: userId } });
+
+    return users.addresses;
+  }
 }
