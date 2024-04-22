@@ -7,7 +7,7 @@ export class AddressModel {
   id: number;
 
   @Field()
-  cep: number;
+  cep: string;
 
   @Field()
   street: string;

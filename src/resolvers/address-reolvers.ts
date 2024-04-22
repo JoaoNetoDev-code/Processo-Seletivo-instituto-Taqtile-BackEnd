@@ -5,6 +5,8 @@ import { CustomError } from '../exceptionsClass/exceptions-not-found-user';
 import { AddressModel } from '../model/address-model';
 import { CreateAddressInput } from './input-validation/address-input-validation';
 import { Address } from '../entity/address';
+import { IMyContext } from '../types/type-context';
+import jwtUtil from '../utils/jwt-util';
 
 @Resolver()
 export class AddressResolvers {
@@ -12,7 +14,9 @@ export class AddressResolvers {
   addressServer = appDataSource.getTreeRepository(Address);
 
   @Mutation(() => AddressModel)
-  async createAddress(@Arg('address') address: CreateAddressInput): Promise<AddressModel> {
+  async createAddress(@Arg('address') address: CreateAddressInput, context: IMyContext): Promise<AddressModel> {
+    jwtUtil.verifyToken(context.token);
+
     const user = await this.userServer.findOne({ where: { id: address.userId } });
 
     if (!user) {
@@ -29,14 +33,31 @@ export class AddressResolvers {
   }
 
   @Query(() => [AddressModel])
-  async getAllAddress(): Promise<AddressModel[]> {
-    return this.addressServer.find();
+  async getAllAddress(
+    @Arg('page') page: number,
+    @Arg('limit') limit: number,
+    context: IMyContext,
+  ): Promise<AddressModel[]> {
+    jwtUtil.verifyToken(context.token);
+
+    const take = limit || 10;
+
+    return this.addressServer.find({
+      take,
+      skip: page * take,
+    });
   }
 
   @Query(() => [AddressModel])
-  async getAllAddressInUser(@Arg('userId') userId: number): Promise<AddressModel[]> {
-    const users = await this.userServer.findOne({ where: { id: userId } });
+  async getAllAddressInUser(@Arg('userId') userId: number, context: IMyContext): Promise<AddressModel[]> {
+    jwtUtil.verifyToken(context.token);
 
-    return users.addresses;
+    const user = await this.userServer.findOne({ where: { id: userId } });
+
+    if (!user) {
+      throw new CustomError('Usuário não encontrado.', 404, 'Não foi possível localizar o usuário.');
+    }
+
+    return user.addresses;
   }
 }

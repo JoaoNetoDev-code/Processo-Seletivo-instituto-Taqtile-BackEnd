@@ -3,7 +3,7 @@ import { Field, InputType } from 'type-graphql';
 @InputType()
 export class CreateAddressInput {
   @Field()
-  cep: number;
+  cep: string;
 
   @Field()
   street: string;
