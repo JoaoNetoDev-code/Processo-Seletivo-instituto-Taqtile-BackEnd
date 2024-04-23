@@ -4,7 +4,7 @@ import { AddressModel } from '../model/address-model';
 import { CreateAddressInput } from './input-validation/address-input-validation';
 import { IMyContext } from '../types/type-context';
 import jwtUtil from '../utils/jwt-util';
-import { Inject, Service } from 'typedi';
+import { Service } from 'typedi';
 
 @Service()
 @Resolver()
@@ -15,7 +15,7 @@ export class AddressResolvers {
   async createAddress(@Arg('address') address: CreateAddressInput, @Ctx() context: IMyContext): Promise<AddressModel> {
     jwtUtil.verifyToken(context.token);
 
-    return this.AddressService.createAddress(address);
+    return this.addressService.createAddress(address);
   }
 
   @Query(() => [AddressModel])
@@ -26,13 +26,13 @@ export class AddressResolvers {
   ): Promise<AddressModel[]> {
     jwtUtil.verifyToken(context.token);
 
-    return this.AddressService.getAllAddress(page, limit);
+    return this.addressService.getAllAddress(page, limit);
   }
 
   @Query(() => [AddressModel])
   async getAllAddressInUser(@Arg('userId') userId: number, @Ctx() context: IMyContext): Promise<AddressModel[]> {
     jwtUtil.verifyToken(context.token);
 
-    return this.AddressService.getAllAddressInUser(userId);
+    return this.addressService.getAllAddressInUser(userId);
   }
 }

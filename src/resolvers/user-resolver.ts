@@ -1,5 +1,5 @@
 import { Resolver, Mutation, Query, Arg, Ctx } from 'type-graphql';
-import { Inject, Service } from 'typedi';
+import { Service } from 'typedi';
 
 import { CreateUserInput, LoginUserInput, UpdatedUserInput } from './input-validation/user-input-validation';
 
@@ -11,10 +11,8 @@ import jwtUtil from '../utils/jwt-util';
 @Resolver()
 @Service()
 export class UserResolver {
-  private readonly UserService: UserService;
-
-  constructor(@Inject() UserService: UserService) {
-    this.UserService = UserService;
+  constructor(private readonly userService: UserService) {
+    this.userService = userService;
   }
 
   @Query(() => [UserModel])
@@ -25,33 +23,33 @@ export class UserResolver {
   ): Promise<UserModel[]> {
     jwtUtil.verifyToken(context.token);
 
-    return this.UserService.getUsers(page, limit);
+    return this.userService.getUsers(page, limit);
   }
 
   @Query(() => UserModel)
   async getUserById(@Arg('id') id: number, @Ctx() context: IMyContext): Promise<UserModel> {
     jwtUtil.verifyToken(context.token);
 
-    return this.UserService.getUserById(id);
+    return this.userService.getUserById(id);
   }
 
   @Mutation(() => LoginValid)
   async login(@Arg('LoginUser') loginData: LoginUserInput): Promise<LoginValid> {
-    return this.UserService.login(loginData);
+    return this.userService.login(loginData);
   }
 
   @Mutation(() => UserModel)
   async createUser(@Arg('userData') userData: CreateUserInput, @Ctx() context: IMyContext): Promise<UserModel> {
     jwtUtil.verifyToken(context.token);
 
-    return this.UserService.createUser(userData);
+    return this.userService.createUser(userData);
   }
 
   @Mutation(() => String)
   async deleteUser(@Arg('id') id: number, @Ctx() context: IMyContext): Promise<string> {
     jwtUtil.verifyToken(context.token);
 
-    return this.UserService.deleteUser(id);
+    return this.userService.deleteUser(id);
   }
 
   @Mutation(() => UserModel)
@@ -62,6 +60,6 @@ export class UserResolver {
   ): Promise<UserModel> {
     jwtUtil.verifyToken(context.token);
 
-    return this.UserService.updateUser(id, userData);
+    return this.userService.updateUser(id, userData);
   }
 }
