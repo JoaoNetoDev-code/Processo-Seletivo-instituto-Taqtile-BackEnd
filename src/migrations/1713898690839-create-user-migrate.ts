@@ -1,8 +1,8 @@
 import { MigrationInterface, QueryRunner, Table } from 'typeorm';
 
-export class CreateUserMigrate1613898690839 implements MigrationInterface {
+export class CreateUserMigrate1713898690839 implements MigrationInterface {
   public async up(queryRunner: QueryRunner): Promise<void> {
-    const userExists = queryRunner.hasTable('user');
+    const userExists = await queryRunner.hasTable('user');
 
     if (!userExists) {
       await queryRunner.createTable(
