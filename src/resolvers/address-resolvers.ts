@@ -9,11 +9,7 @@ import { Inject, Service } from 'typedi';
 @Service()
 @Resolver()
 export class AddressResolvers {
-  private readonly AddressService: AddressService;
-
-  constructor(@Inject() AddressService: AddressService) {
-    this.AddressService = AddressService;
-  }
+  constructor(private readonly addressService: AddressService) {}
 
   @Mutation(() => AddressModel)
   async createAddress(@Arg('address') address: CreateAddressInput, @Ctx() context: IMyContext): Promise<AddressModel> {
