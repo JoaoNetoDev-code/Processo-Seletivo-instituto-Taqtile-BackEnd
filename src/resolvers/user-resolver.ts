@@ -11,9 +11,7 @@ import jwtUtil from '../utils/jwt-util';
 @Resolver()
 @Service()
 export class UserResolver {
-  constructor(private readonly userService: UserService) {
-    this.userService = userService;
-  }
+  constructor(private readonly userService: UserService) {}
 
   @Query(() => [UserModel])
   async getUsers(
