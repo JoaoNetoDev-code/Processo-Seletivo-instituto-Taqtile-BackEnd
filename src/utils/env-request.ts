@@ -6,6 +6,7 @@ const envRequest = (): DotenvConfigOutput => {
   if (['dev', 'test'].includes(process.env.NODE_ENV)) {
     return dotenv.config({ path: env });
   }
+  return dotenv.config({ path: '.env' });
 };
 
 export default envRequest;
