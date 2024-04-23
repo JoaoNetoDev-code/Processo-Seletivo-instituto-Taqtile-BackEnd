@@ -1,18 +1,18 @@
-import { AddressService } from './../service/address-service';
+import { AddressService } from '../service/address-service';
 import { Resolver, Mutation, Arg, Query, Ctx } from 'type-graphql';
 import { AddressModel } from '../model/address-model';
 import { CreateAddressInput } from './input-validation/address-input-validation';
 import { IMyContext } from '../types/type-context';
 import jwtUtil from '../utils/jwt-util';
-import Container, { Service } from 'typedi';
+import { Inject, Service } from 'typedi';
 
 @Service()
 @Resolver()
 export class AddressResolvers {
-  private AddressService: AddressService;
+  private readonly AddressService: AddressService;
 
-  constructor() {
-    this.AddressService = Container.get(AddressService);
+  constructor(@Inject() AddressService: AddressService) {
+    this.AddressService = AddressService;
   }
 
   @Mutation(() => AddressModel)

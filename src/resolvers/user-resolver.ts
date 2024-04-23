@@ -1,5 +1,5 @@
 import { Resolver, Mutation, Query, Arg, Ctx } from 'type-graphql';
-import Container, { Service } from 'typedi';
+import { Inject, Service } from 'typedi';
 
 import { CreateUserInput, LoginUserInput, UpdatedUserInput } from './input-validation/user-input-validation';
 
@@ -11,10 +11,10 @@ import jwtUtil from '../utils/jwt-util';
 @Resolver()
 @Service()
 export class UserResolver {
-  private UserService: UserService;
+  private readonly UserService: UserService;
 
-  constructor() {
-    this.UserService = Container.get(UserService);
+  constructor(@Inject() UserService: UserService) {
+    this.UserService = UserService;
   }
 
   @Query(() => [UserModel])
